@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width">
+	  <title> Chart emulation </title>
+
+	  <link rel="stylesheet" href="styles/Treant.css">
+	  <link rel="stylesheet" href="styles/super-simple.css">
+
+	<script src="js/jquery.min.js"></script>
+	<script src="js/raphael.js"></script>
+	<script src="js/Treant.js"></script>
+
+	<script>
+
+		var node = function(value, children) {
+
+			// node rep for treant.js
+			this.text = { name: value };
+			this.children = children;
+
+			// theoretical node rep
+			this.value = value;
+			this.left = this.children[0];
+			this.right = this.children[1];
+
+		};
+
+		node.prototype.setAll = function(value, left, right) {
+			this.value = value;
+			this.left = left;
+			this.right = right;
+			this.children = [left, right];
+			this.text = {name: value};
+		}
+
+		node.prototype.setLeft = function(node) {
+			this.left = node;
+			this.children[0] = node;
+		}
+
+		node.prototype.setRight = function(node) {
+			this.right = node;
+			this.children[1] = node;
+		}
+
+		var ourTree = new node("0", [
+										new node("1", [
+													new node("4", []),
+													new node("5", [])
+												]
+										),
+										new node("2", [])
+									]);
+
+		var simple_chart_config = {
+			chart: {
+				container: "#OrganiseChart-simple"
+			},
+
+			nodeStructure: ourTree
+		};
+
+		var printedNodes = [];
+
+		var printInorder = function(node) {
+			if(node == null) {
+				return;
+			}
+			printInorder(node.left);
+			printedNodes.push(node.value);
+			printInorder(node.right);
+		};
+
+		var printPreorder = function(node) {
+			if(node == null) {
+				return;
+			}
+			printedNodes.push(node.value);
+			printPreorder(node.left);
+			printPreorder(node.right);
+		};
+
+		var printPostorder = function(node) {
+			if(node == null) {
+				return;
+			}
+			printPostorder(node.left);
+			printPostorder(node.right);
+			printedNodes.push(node.value);
+		};
+
+
+		var clearTree = function() {
+			ourTree = new node("~", []);
+			renderTree(ourTree);
+		};
+
+		var insertNode = function(v, tree) {
+
+			console.log(tree.value);
+
+			if( tree.value == "~") {
+				tree.setAll(v, new node("~", []), new node("~", []));
+				return;
+			}
+
+			if(parseInt(v) > parseInt(tree.value)) {
+				insertNode(v, tree.right);
+			}
+			else {
+				insertNode(v, tree.left);
+			}
+		};
+
+		var renderTree = function(tree) {
+			if(tree != null) {
+				simple_chart_config.nodeStructure = tree;
+				new Treant( simple_chart_config );
+			}
+		};
+
+
+	</script>
+
+</head>
+<body>
+	<center>
+    <h2>Binary Search Tree</h2>
+	<div class="chart" id="OrganiseChart-simple"></div>
+
+	<input type="button" onclick="clearTree();" value="CLEAR TREE" /> <br /><br />
+
+	<form onsubmit="insertNode($('#newvalue').val(), ourTree); renderTree(ourTree);$('#newvalue').val('');return false;">
+	<input id="newvalue" />
+	<input type="submit" value="INSERT" />
+	</form>
+
+	<script>
+
+		clearTree();
+
+		new Treant( simple_chart_config );
+
+		printedNodes = [];
+		printInorder(ourTree);
+		console.log(printedNodes);
+
+		printedNodes = [];
+		printPreorder(ourTree);
+		console.log(printedNodes);
+
+		printedNodes = [];
+		printPostorder(ourTree);
+		console.log(printedNodes);
+	</script>
+
+</body>
+</html>
